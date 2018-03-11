@@ -2,6 +2,7 @@ package env
 
 import (
 	"github.com/caarlos0/env"
+	"log"
 )
 
 const (
@@ -24,7 +25,30 @@ func NewConfig() *Config {
 
 	err := env.Parse(&conf.DB)
 	if err != nil {
-		panic(err)
+		log.Panic("Error parsing DB config environment variables", err)
+	}
+
+	return conf
+}
+
+type TestConfig struct {
+	DB TestDB
+}
+
+type TestDB struct {
+	Host string `env:"TEST_DBHOST" envDefault:"localhost"`
+	Username string `env:"TEST_DBUSER" envDefault:"loganw"`
+	Password string `env:"TEST_DBPASS" envDefault:"\"\""`
+	Name string `env:"TEST_DBNAME" envDefault:"mta_test"`
+}
+
+func NewTestConfig() *TestConfig {
+	conf := &TestConfig{}
+
+	// parse server conf
+	err := env.Parse(&conf.DB)
+	if err != nil {
+		log.Panic("Error parsing test DB config environment variables", err)
 	}
 
 	return conf

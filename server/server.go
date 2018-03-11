@@ -17,6 +17,8 @@ var config *env.Config
 
 func main() {
     initDb()
+    types.DropRoutesTable(db)
+    types.CreateAndPopulateRoutesTable(db)
 
     http.HandleFunc("/routes", allRoutesHandler)
     log.Fatal(http.ListenAndServe(":8080", nil))
