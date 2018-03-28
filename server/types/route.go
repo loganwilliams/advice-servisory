@@ -8,8 +8,7 @@ import (
 )
 
 type Route struct {
-  Id          int             `json:"id"`
-  Code        string          `json:"code"`
+  Id          string          `json:"id"`
   ShortName   string          `json:"shortname"`
   Name        string          `json:"name"`
   Description string          `json:"description"`
@@ -60,8 +59,7 @@ func CreateAndPopulateRoutesTable(db *sql.DB) error {
 
   // Create routes table
   mkTableStmt := `CREATE TABLE routes(
-    id serial primary key,
-    code varchar(5),
+    id varchar(5) primary key,
     short_name varchar(5),
     name varchar(200),
     description text,
@@ -77,7 +75,7 @@ func CreateAndPopulateRoutesTable(db *sql.DB) error {
 
   // insert into routes table
   insertStmt := `INSERT INTO routes(
-    code,
+    id,
     short_name,
     name,
     description,
@@ -85,7 +83,7 @@ func CreateAndPopulateRoutesTable(db *sql.DB) error {
     url,
     color
   ) SELECT
-    import.routes.route_id AS code,
+    import.routes.route_id AS id,
     import.routes.route_short_name as short_name,
     import.routes.route_long_name AS name,
     import.routes.route_desc AS description,
@@ -125,7 +123,7 @@ func ReadRoutes(db *sql.DB) ([]*Route, error) {
 
   // prepare statement if not already done so.
   if routeReadAllStmt == nil {
-    stmt := `SELECT id, code, short_name, name, description, type, url, COALESCE(color,'') AS color
+    stmt := `SELECT id, short_name, name, description, type, url, COALESCE(color,'') AS color
              FROM routes`
     routeReadAllStmt, err = db.Prepare(stmt)
     if err != nil {
@@ -143,7 +141,6 @@ func ReadRoutes(db *sql.DB) ([]*Route, error) {
     route := &Route{}
     err = rows.Scan(
       &route.Id,
-      &route.Code,
       &route.ShortName,
       &route.Name,
       &route.Description,
@@ -163,4 +160,26 @@ func ReadRoutes(db *sql.DB) ([]*Route, error) {
   }
 
   return routes, nil
+}
+
+func (r *Route) Insert(db *sql.DB) error {
+  stmt := `INSERT INTO routes(
+      id,
+      short_name,
+      name,
+      description,
+      type,
+      url,
+      color
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7)`
+
+  createStmt, err := db.Prepare(stmt)
+
+  if err != nil {
+    return err
+  }
+
+  _, err = createStmt.Exec(r.Id, r.ShortName, r.Name, r.Description, r.Type, r.URL, r.Color)
+
+  return err
 }
