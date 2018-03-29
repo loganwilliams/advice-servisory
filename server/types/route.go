@@ -48,7 +48,6 @@ func CreateAndPopulateRoutesTable(db *sql.DB) error {
   }
 
   // Copy from CSV
-  // TODO: change this so its not an absolute path
   copyFromCSVStmt := fmt.Sprintf(`COPY import.routes FROM 
     '%s' WITH DELIMITER ',' HEADER CSV`, routesLocation)
 

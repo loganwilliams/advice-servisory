@@ -20,6 +20,17 @@ func RoutesLocation() (string, error) {
 	return "/tmp/gtfsstatic/routes.txt", nil
 }
 
+func StopsLocation() (string, error) {
+  if _, err := os.Stat("/tmp/gtfsstatic/stops.txt"); os.IsNotExist(err) {
+    err := download()
+    if err != nil {
+      return "", err
+    }
+  }
+
+  return "/tmp/gtfsstatic/stops.txt", nil
+}
+
 func download() error {
 	log.Println("Static GTFS files do not exist, downloading to /tmp")
 

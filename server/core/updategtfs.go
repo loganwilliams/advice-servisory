@@ -50,13 +50,14 @@ func (a *AdviceServisory) AddTripUpdates() error {
   updates := a.GetTripUpdates()
 
   for _, update := range updates {
-      // lets get the trip this tripUpdate is associated with
-      trip := update.GetTrip()
-      err := trip.Upsert(a.DB)
+    // make sure the trip exists in the DB
+    err := update.Trip.Upsert(a.DB)
 
-      if err != nil {
-        panic(err)
-      }
+    if err != nil {
+      return err
+    }
+
+    update.Insert(a.DB) 
   }
 
   return nil
@@ -73,7 +74,7 @@ func trainList(transit *transit_realtime.FeedMessage, now time.Time) (updates []
     if err == nil {
       // Only include trains that have moved in the last 10 minutes, are reporting times in the present/past
       // and have a line associated with them.
-      if update.Timestamp.After(cutoff) && update.Timestamp.Before(now) && update.Route != nil {
+      if update.Timestamp.After(cutoff) && update.Timestamp.Before(now) {
         updates = append(updates, *update)
       }
     }
@@ -98,11 +99,9 @@ func trainPositionFromTripUpdate(entity *transit_realtime.FeedEntity) (*types.Tr
   stopId := stopTimes[0].GetStopId()
 
   return &types.TripUpdate{
-    TripId: tripId, 
-    Route: &types.Route{Id: routeId}, // TODO possibly implement NewRoute constructor
-    StopId: stopId, 
-    Timestamp: timestamp, 
-    Direction: direction}, nil
+    Trip: &types.Trip{Id: tripId, Route: &types.Route{Id: routeId}, Direction: direction}, 
+    Stop: &types.Stop{Id: stopId},
+    Timestamp: timestamp}, nil
 
 }
 

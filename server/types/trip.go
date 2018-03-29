@@ -8,9 +8,9 @@ import (
 )
 
 type Trip struct {
-  Id string
-  Route *Route
-  Direction int
+  Id string     `json:"id"`
+  Route *Route  `json:"route"`
+  Direction int `json:"direction"`
 }
 
 const (
@@ -23,7 +23,7 @@ var (
 )
 
 func CreateTripsTable(db *sql.DB) error {
-  mkTripTableStmt := `CREATE TABLE trips(
+  mkTripTableStmt := `CREATE TABLE IF NOT EXISTS trips(
     id varchar(100) primary key,
     route varchar(5) references routes(id),
     direction int)`
@@ -125,8 +125,8 @@ func ReadTrips(db *sql.DB) ([]*Trip, error) {
 
   // prepare statement if not already done so.
   if tripReadAllStmt == nil {
-    stmt := `SELECT trips.id AS 
-              id, 
+    stmt := `SELECT
+              trips.id AS id, 
               direction, 
               routes.id AS route_id, 
               COALESCE(short_name, '') AS short_name, 

@@ -11,6 +11,7 @@ import (
   "github.com/loganwilliams/adviceservisory/server/env"
   "github.com/loganwilliams/adviceservisory/server/types"
   "github.com/loganwilliams/adviceservisory/server/pretty"
+  "github.com/gorilla/mux"
 
   _ "github.com/lib/pq"
 )
@@ -28,7 +29,6 @@ func NewAdviceServisory() *AdviceServisory {
   return a
 }
 
-// Co-authored-by: Connor <c@polygon.pizza>
 func (a *AdviceServisory) Start(ticker *time.Ticker) {
   a.AddTripUpdates()
 
@@ -71,6 +71,75 @@ func (a *AdviceServisory) AllTripsHandler(w http.ResponseWriter, r *http.Request
 
   fmt.Fprintf(w, "%s", pretty.Json(string(response)))
 }
+
+func (a *AdviceServisory) TripUpdateHandler(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r)
+  trip := &types.Trip{Id: vars["trip_id"]}
+  updates, err := trip.ReadUpdates(a.DB)
+
+  if err != nil {
+    log.Panic("Error querying update", err)
+  }
+
+  response, err := json.Marshal(updates)
+
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
+
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
+
+func (a *AdviceServisory) AllTripUpdatesHandler(w http.ResponseWriter, r *http.Request) {
+  updates, err := types.ReadAllUpdates(a.DB)
+
+  if err != nil {
+    log.Panic("Error querying update", err)
+  }
+
+  response, err := json.Marshal(updates)
+
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
+
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
+
+func (a *AdviceServisory) AllStopsHandler(w http.ResponseWriter, r *http.Request) {
+  stops, err := types.ReadAllStops(a.DB)
+
+  if err != nil {
+    log.Panic("Error querying update", err)
+  }
+
+  response, err := json.Marshal(stops)
+
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
+
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
+
+func (a *AdviceServisory) StationHandler(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r)
+  stop := &types.Stop{Station: vars["station_id"]}
+  updates, err := stop.ReadUpdates(a.DB)
+
+  if err != nil {
+    log.Panic("Error querying update", err)
+  }
+
+  response, err := json.Marshal(updates)
+
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
+
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
+
 
 func (a *AdviceServisory) InitDb() {
     a.Config = env.NewConfig()
