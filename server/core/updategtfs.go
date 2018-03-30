@@ -1,18 +1,17 @@
 package core
 
 import (
-  "log"
-  "time"
-  "net/http"
   "bytes"
-  "strings"
   "errors"
   "fmt"
+  "log"
+  "net/http"
+  "strings"
+  "time"
 
-  "github.com/loganwilliams/adviceservisory/server/transit_realtime"
   "github.com/golang/protobuf/proto"
+  "github.com/loganwilliams/adviceservisory/server/transit_realtime"
   "github.com/loganwilliams/adviceservisory/server/types"
-
 )
 
 // GetLiveTrains() returns a GeoJSON []byte object with the most recent position of all trains in the NYC Subway, as
@@ -21,15 +20,15 @@ func (a *AdviceServisory) GetTripUpdates() []types.TripUpdate {
   // The MTA has several different endpoints for different lines. My API key is in here, but the abuse potential
   // seems low enough that I'm okay with that.
   datafeeds := [](string){
-    "http://datamine.mta.info/mta_esi.php?key=5a28db44c9856c30f98eeac4cd09a345&feed_id=1",  // 123456S
-    "http://datamine.mta.info/mta_esi.php?key=5a28db44c9856c30f98eeac4cd09a345&feed_id=26", // ACE
-    "http://datamine.mta.info/mta_esi.php?key=5a28db44c9856c30f98eeac4cd09a345&feed_id=16", // NQRW
-    "http://datamine.mta.info/mta_esi.php?key=5a28db44c9856c30f98eeac4cd09a345&feed_id=21", // BDFM
-    "http://datamine.mta.info/mta_esi.php?key=5a28db44c9856c30f98eeac4cd09a345&feed_id=2",  // L
-    "http://datamine.mta.info/mta_esi.php?key=5a28db44c9856c30f98eeac4cd09a345&feed_id=11", // SIR
-    "http://datamine.mta.info/mta_esi.php?key=5a28db44c9856c30f98eeac4cd09a345&feed_id=31", // G
-    "http://datamine.mta.info/mta_esi.php?key=5a28db44c9856c30f98eeac4cd09a345&feed_id=36", // JZ
-    "http://datamine.mta.info/mta_esi.php?key=5a28db44c9856c30f98eeac4cd09a345&feed_id=51",  // 7
+    "http://datamine.mta.info/mta_esi.php?key=" + a.Config.MTA.Key + "&feed_id=1",  // 123456S
+    "http://datamine.mta.info/mta_esi.php?key=" + a.Config.MTA.Key + "&feed_id=26", // ACE
+    "http://datamine.mta.info/mta_esi.php?key=" + a.Config.MTA.Key + "&feed_id=16", // NQRW
+    "http://datamine.mta.info/mta_esi.php?key=" + a.Config.MTA.Key + "&feed_id=21", // BDFM
+    "http://datamine.mta.info/mta_esi.php?key=" + a.Config.MTA.Key + "&feed_id=2",  // L
+    "http://datamine.mta.info/mta_esi.php?key=" + a.Config.MTA.Key + "&feed_id=11", // SIR
+    "http://datamine.mta.info/mta_esi.php?key=" + a.Config.MTA.Key + "&feed_id=31", // G
+    "http://datamine.mta.info/mta_esi.php?key=" + a.Config.MTA.Key + "&feed_id=36", // JZ
+    "http://datamine.mta.info/mta_esi.php?key=" + a.Config.MTA.Key + "&feed_id=51", // 7
   }
 
   var updates []types.TripUpdate
@@ -43,7 +42,7 @@ func (a *AdviceServisory) GetTripUpdates() []types.TripUpdate {
     updates = append(updates, trainList(transit, time.Now())...)
   }
 
-  return updates  
+  return updates
 }
 
 func (a *AdviceServisory) AddTripUpdates() error {
@@ -57,7 +56,7 @@ func (a *AdviceServisory) AddTripUpdates() error {
       return err
     }
 
-    update.Insert(a.DB) 
+    update.Insert(a.DB)
   }
 
   return nil
@@ -66,7 +65,7 @@ func (a *AdviceServisory) AddTripUpdates() error {
 // Returns a list of trains from an unmarshalled protobuf that have had an update within
 // 10 minutes of the time "now".
 func trainList(transit *transit_realtime.FeedMessage, now time.Time) (updates []types.TripUpdate) {
-  cutoff := now.Add(-10.0*time.Minute)
+  cutoff := now.Add(-10.0 * time.Minute)
 
   for _, entity := range transit.Entity {
     update, err := trainPositionFromTripUpdate(entity)
@@ -91,16 +90,16 @@ func trainPositionFromTripUpdate(entity *transit_realtime.FeedEntity) (*types.Tr
   }
 
   tripId := entity.GetTripUpdate().GetTrip().GetTripId()
-  direction := directionFromId(tripId)      
+  direction := directionFromId(tripId)
 
   routeId := entity.GetTripUpdate().GetTrip().GetRouteId()
-  stopTimes := entity.GetTripUpdate().GetStopTimeUpdate();
+  stopTimes := entity.GetTripUpdate().GetStopTimeUpdate()
   timestamp := time.Unix(int64(stopTimes[0].GetArrival().GetTime()), 0)
   stopId := stopTimes[0].GetStopId()
 
   return &types.TripUpdate{
-    Trip: &types.Trip{Id: tripId, Route: &types.Route{Id: routeId}, Direction: direction}, 
-    Stop: &types.Stop{Id: stopId},
+    Trip:      &types.Trip{Id: tripId, Route: &types.Route{Id: routeId}, Direction: direction},
+    Stop:      &types.Stop{Id: stopId},
     Timestamp: timestamp}, nil
 
 }
@@ -128,7 +127,7 @@ func getGTFS(url string, retries int) (*transit_realtime.FeedMessage, error) {
   defer resp.Body.Close()
 
   if err != nil {
-   fmt.Printf("failed to fetch for url %q", url)
+    fmt.Printf("failed to fetch for url %q", url)
   }
 
   buf := new(bytes.Buffer)
@@ -137,8 +136,8 @@ func getGTFS(url string, retries int) (*transit_realtime.FeedMessage, error) {
 
   transit := &transit_realtime.FeedMessage{}
   if err := proto.Unmarshal(gtfs, transit); err != nil {
-      log.Println("Failed to parse GTFS feed", err)
-      return getGTFS(url, retries-1)
+    log.Println("Failed to parse GTFS feed", err)
+    return getGTFS(url, retries-1)
   }
 
   return transit, nil
