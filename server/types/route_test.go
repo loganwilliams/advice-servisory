@@ -2,8 +2,10 @@ package types
 
 import (
 	"database/sql"
-	"github.com/stretchr/testify/suite"
 	"log"
+
+	"github.com/stretchr/testify/suite"
+
 	_ "github.com/lib/pq"
 )
 

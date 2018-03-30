@@ -2,19 +2,19 @@ package types
 
 import (
   "database/sql"
-  "log"
-  "github.com/loganwilliams/adviceservisory/server/gtfsstatic"
   "fmt"
+  "github.com/loganwilliams/adviceservisory/server/gtfsstatic"
+  "log"
 )
 
 type Route struct {
-  Id          string          `json:"id"`
-  ShortName   string          `json:"shortname"`
-  Name        string          `json:"name"`
-  Description string          `json:"description"`
-  Type        int             `json:"type"`
-  URL         string          `json:"url"`
-  Color       string          `json:"color"`
+  Id          string `json:"id"`
+  ShortName   string `json:"shortname"`
+  Name        string `json:"name"`
+  Description string `json:"description"`
+  Type        int    `json:"type"`
+  URL         string `json:"url"`
+  Color       string `json:"color"`
 }
 
 // package level globals for storing prepared sql statements
@@ -110,14 +110,10 @@ func DropRoutesTable(db *sql.DB) error {
   return nil
 }
 
-// func SetupRoutesTable(db *sql.DB) error {
-
-// }
-
 func ReadRoutes(db *sql.DB) ([]*Route, error) {
   var (
     routes []*Route = []*Route{}
-    err error
+    err    error
   )
 
   // prepare statement if not already done so.

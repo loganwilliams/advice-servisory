@@ -1,33 +1,48 @@
 package core
 
 import (
-  "net/http"
-  "log"
   "encoding/json"
   "fmt"
+  "log"
+  "net/http"
 
-  "github.com/loganwilliams/adviceservisory/server/types"
-  "github.com/loganwilliams/adviceservisory/server/pretty"
   "github.com/gorilla/mux"
+  "github.com/loganwilliams/adviceservisory/server/pretty"
+  "github.com/loganwilliams/adviceservisory/server/types"
 
   _ "github.com/lib/pq"
 )
 
-// make a generic handler?
-
 func (a *AdviceServisory) AllRoutesHandler(w http.ResponseWriter, r *http.Request) {
-    routes, err := types.ReadRoutes(a.DB)
+  routes, err := types.ReadRoutes(a.DB)
 
-    if err != nil {
-        log.Panic("Error querying routes", err)
-    }
+  if err != nil {
+    log.Panic("Error querying routes", err)
+  }
 
-    response, err := json.Marshal(routes)
-    if err != nil {
-        log.Panic("Error marshalling json", err)
-    }
+  response, err := json.Marshal(routes)
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
 
-    fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
+
+func (a *AdviceServisory) RouteHandler(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r)
+  route := &types.Route{Id: vars["route_id"]}
+  updates, err := route.ReadUpdates(a.DB)
+
+  if err != nil {
+    log.Panic("Error querying updates", err)
+  }
+
+  response, err := json.Marshal(updates)
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
+
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
 }
 
 func (a *AdviceServisory) AllTripsHandler(w http.ResponseWriter, r *http.Request) {
@@ -116,7 +131,7 @@ func (a *AdviceServisory) LiveUpdatesHandler(w http.ResponseWriter, r *http.Requ
 
 func (a *AdviceServisory) LiveUpdatesHandlerGJ(w http.ResponseWriter, r *http.Request) {
   updates, err := types.LiveUpdates(a.DB)
-  geojson := types.MakeGeoJSON(updates)  
+  geojson := types.MakeGeoJSON(updates)
 
   if err != nil {
     log.Panic("Error querying update", err)

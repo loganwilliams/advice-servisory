@@ -1,26 +1,27 @@
 package types
 
 import (
-  "time"
   "database/sql"
   "log"
+  "time"
 
   "github.com/paulmach/go.geojson"
 )
 
 // The current position of a train.
 type TripUpdate struct {
-  Id int              `json:"id"`
-  Trip *Trip          `json:"trip"`
-  Stop *Stop          `json:"stop"`
+  Id        int       `json:"id"`
+  Trip      *Trip     `json:"trip"`
+  Stop      *Stop     `json:"stop"`
   Timestamp time.Time `json:"timestamp"`
 }
 
 var (
-  readTripUpdateStmt *sql.Stmt
-  readAllTripUpdatesStmt *sql.Stmt
+  readTripUpdateStmt            *sql.Stmt
+  readAllTripUpdatesStmt        *sql.Stmt
   readTripUpdateFromStationStmt *sql.Stmt
-  liveUpdatesStmt *sql.Stmt
+  liveUpdatesStmt               *sql.Stmt
+  readRouteTripUpdateStmt       *sql.Stmt
 )
 
 func CreateTripUpdatesTable(db *sql.DB) error {
@@ -75,7 +76,7 @@ func (tu *TripUpdate) Insert(db *sql.DB) error {
 func ReadAllUpdates(db *sql.DB) ([]*TripUpdate, error) {
   var (
     updates []*TripUpdate = []*TripUpdate{}
-    err error
+    err     error
   )
 
   if readAllTripUpdatesStmt == nil {
@@ -126,7 +127,7 @@ func ReadAllUpdates(db *sql.DB) ([]*TripUpdate, error) {
 func (s *Stop) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
   var (
     updates []*TripUpdate = []*TripUpdate{}
-    err error
+    err     error
   )
 
   if readTripUpdateFromStationStmt == nil {
@@ -203,11 +204,9 @@ func (s *Stop) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
 }
 
 func LiveUpdates(db *sql.DB) ([]*TripUpdate, error) {
-  // 
-  
   var (
     updates []*TripUpdate = []*TripUpdate{}
-    err error
+    err     error
   )
 
   if liveUpdatesStmt == nil {
@@ -288,7 +287,7 @@ func LiveUpdates(db *sql.DB) ([]*TripUpdate, error) {
 func (t *Trip) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
   var (
     updates []*TripUpdate = []*TripUpdate{}
-    err error
+    err     error
   )
 
   if readTripUpdateStmt == nil {
@@ -313,7 +312,7 @@ func (t *Trip) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
             LEFT OUTER JOIN trips ON trip_updates.trip_id = trips.id
             LEFT OUTER JOIN routes ON trips.route = routes.id
             LEFT OUTER JOIN stops ON trip_updates.stop = stops.id
-            WHERE trip_id = $1`
+            WHERE trip_id = $1 AND timestamp > $2`
 
     readTripUpdateStmt, err = db.Prepare(stmt)
     if err != nil {
@@ -321,7 +320,86 @@ func (t *Trip) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
     }
   }
 
-  rows, err := readTripUpdateStmt.Query(t.Id)
+  rows, err := readTripUpdateStmt.Query(t.Id, time.Now().Add(-24*time.Hour))
+
+  if err != nil {
+    return updates, err
+  }
+
+  defer rows.Close()
+
+  for rows.Next() {
+    update := &TripUpdate{Stop: &Stop{}, Trip: &Trip{Route: &Route{}}}
+
+    err = rows.Scan(
+      &update.Id,
+      &update.Trip.Id,
+      &update.Stop.Id,
+      &update.Timestamp,
+      &update.Trip.Direction,
+      &update.Trip.Route.Id,
+      &update.Trip.Route.ShortName,
+      &update.Trip.Route.Name,
+      &update.Trip.Route.Description,
+      &update.Trip.Route.Type,
+      &update.Trip.Route.URL,
+      &update.Trip.Route.Color,
+      &update.Stop.Name,
+      &update.Stop.Latitude,
+      &update.Stop.Longitude,
+      &update.Stop.Station)
+
+    if err != nil {
+      return updates, err
+    }
+
+    updates = append(updates, update)
+  }
+
+  if err := rows.Err(); err != nil {
+    return updates, err
+  }
+
+  return updates, nil
+}
+
+func (r *Route) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
+  var (
+    updates []*TripUpdate = []*TripUpdate{}
+    err     error
+  )
+
+  if readRouteTripUpdateStmt == nil {
+    stmt := `SELECT
+              trip_updates.id AS id,
+              trip_id,
+              stop,
+              timestamp,
+              direction,
+              routes.id AS route_id,
+              COALESCE(short_name, '') AS short_name,
+              COALESCE(routes.name, '') AS route_name,
+              COALESCE(description, '') AS description,
+              COALESCE(type, 0) AS type,
+              COALESCE(url, '') AS url,
+              COALESCE(color, '') AS color,
+              stops.name AS stop_name,
+              stops.latitude AS latitude,
+              stops.longitude AS longitude,
+              stops.station AS station
+            FROM trip_updates
+            LEFT OUTER JOIN trips ON trip_updates.trip_id = trips.id
+            LEFT OUTER JOIN routes ON trips.route = routes.id
+            LEFT OUTER JOIN stops ON trip_updates.stop = stops.id
+            WHERE trips.route = $1 AND timestamp > $2`
+
+    readRouteTripUpdateStmt, err = db.Prepare(stmt)
+    if err != nil {
+      return updates, err
+    }
+  }
+
+  rows, err := readRouteTripUpdateStmt.Query(r.Id, time.Now().Add(-24*time.Hour))
 
   if err != nil {
     return updates, err
@@ -368,7 +446,7 @@ func (t *Trip) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
 func MakeGeoJSON(updates []*TripUpdate) *geojson.FeatureCollection {
   fc := geojson.NewFeatureCollection()
 
-  for _, update := range(updates) {
+  for _, update := range updates {
     f := geojson.NewPointFeature([]float64{float64(update.Stop.Longitude), float64(update.Stop.Latitude)})
     f.SetProperty("trip", update.Trip.Id)
     f.SetProperty("stop", update.Stop.Id)

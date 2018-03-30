@@ -2,12 +2,13 @@ package types
 
 import (
 	"database/sql"
-	"github.com/stretchr/testify/suite"
+	"fmt"
 	"log"
 	"os"
 	"testing"
+
 	"github.com/loganwilliams/adviceservisory/server/env"
-	"fmt"
+	"github.com/stretchr/testify/suite"
 )
 
 var (
@@ -18,7 +19,7 @@ var (
 func TestMain(m *testing.M) {
 	var (
 		retCode int
-		err		error
+		err     error
 	)
 
 	err = setup()
@@ -39,7 +40,7 @@ func TestMain(m *testing.M) {
 func setup() error {
 	var (
 		conf *env.TestConfig
-		err error
+		err  error
 	)
 
 	// get test config
@@ -62,7 +63,6 @@ func setup() error {
 	}
 
 	// ping open db to verify the connection has been established.
-	// otherwise (╥﹏╥)
 	err = testDB.Ping()
 	if err != nil {
 		log.Panic("Error pinging test db", err)

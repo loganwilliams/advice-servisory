@@ -2,17 +2,18 @@ package types
 
 import (
   "database/sql"
-  "log"
-  "github.com/loganwilliams/adviceservisory/server/gtfsstatic"
   "fmt"
+  "log"
+
+  "github.com/loganwilliams/adviceservisory/server/gtfsstatic"
 )
 
 type Stop struct {
-	Id		string	`json:"id"`
-	Name	string `json:"name"`
-  Station string `json:"station"`
-	Latitude float32 `json:"latitude"`
-	Longitude float32 `json:"longitude"`
+  Id        string  `json:"id"`
+  Name      string  `json:"name"`
+  Station   string  `json:"station"`
+  Latitude  float32 `json:"latitude"`
+  Longitude float32 `json:"longitude"`
 }
 
 var (
@@ -106,7 +107,7 @@ func DropStopsTable(db *sql.DB) error {
 func ReadAllStops(db *sql.DB) ([]*Stop, error) {
   var (
     stops []*Stop = []*Stop{}
-    err error
+    err   error
   )
 
   // prepare statement if not already done so.

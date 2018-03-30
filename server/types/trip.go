@@ -8,9 +8,9 @@ import (
 )
 
 type Trip struct {
-  Id string     `json:"id"`
-  Route *Route  `json:"route"`
-  Direction int `json:"direction"`
+  Id        string `json:"id"`
+  Route     *Route `json:"route"`
+  Direction int    `json:"direction"`
 }
 
 const (
@@ -84,7 +84,7 @@ func (t *Trip) Create(db *sql.DB) error {
 }
 
 func (t *Trip) Upsert(db *sql.DB) error {
-  exists, err := t.Exists(db); 
+  exists, err := t.Exists(db)
 
   if exists {
     return nil
@@ -120,7 +120,7 @@ func (t *Trip) Exists(db *sql.DB) (bool, error) {
 func ReadTrips(db *sql.DB) ([]*Trip, error) {
   var (
     trips []*Trip = []*Trip{}
-    err error
+    err   error
   )
 
   // prepare statement if not already done so.
