@@ -14,6 +14,7 @@ import (
 )
 
 func (a *AdviceServisory) AllRoutesHandler(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
   routes, err := types.ReadRoutes(a.DB)
 
   if err != nil {
@@ -29,6 +30,7 @@ func (a *AdviceServisory) AllRoutesHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (a *AdviceServisory) RouteHandler(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
   vars := mux.Vars(r)
   route := &types.Route{Id: vars["route_id"]}
   updates, err := route.ReadUpdates(a.DB)
@@ -46,6 +48,7 @@ func (a *AdviceServisory) RouteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *AdviceServisory) AllTripsHandler(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
   trips, err := types.ReadTrips(a.DB)
 
   if err != nil {
@@ -62,6 +65,7 @@ func (a *AdviceServisory) AllTripsHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (a *AdviceServisory) TripUpdateHandler(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
   vars := mux.Vars(r)
   trip := &types.Trip{Id: vars["trip_id"]}
   updates, err := trip.ReadUpdates(a.DB)
@@ -80,6 +84,7 @@ func (a *AdviceServisory) TripUpdateHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (a *AdviceServisory) AllStopsHandler(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
   stops, err := types.ReadAllStops(a.DB)
 
   if err != nil {
@@ -96,6 +101,7 @@ func (a *AdviceServisory) AllStopsHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (a *AdviceServisory) StationHandler(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
   vars := mux.Vars(r)
   stop := &types.Stop{Station: vars["station_id"]}
   updates, err := stop.ReadUpdates(a.DB)
@@ -114,6 +120,7 @@ func (a *AdviceServisory) StationHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (a *AdviceServisory) LiveUpdatesHandler(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
   updates, err := types.LiveUpdates(a.DB)
 
   if err != nil {
@@ -130,6 +137,7 @@ func (a *AdviceServisory) LiveUpdatesHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (a *AdviceServisory) LiveUpdatesHandlerGJ(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
   updates, err := types.LiveUpdates(a.DB)
   geojson := types.MakeGeoJSON(updates)
 
@@ -144,4 +152,13 @@ func (a *AdviceServisory) LiveUpdatesHandlerGJ(w http.ResponseWriter, r *http.Re
   }
 
   fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
+
+func setHeaders(w http.ResponseWriter) http.ResponseWriter {
+  // Send the correct headers to enable CORS
+  w.Header().Set("Content-Type", "text/json; charset=ascii")
+  w.Header().Set("Access-Control-Allow-Origin", "*")
+  w.Header().Set("Access-Control-Allow-Headers", "Content-Type,access-control-allow-origin, access-control-allow-headers")
+
+  return w
 }

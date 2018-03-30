@@ -10,38 +10,38 @@ import (
 )
 
 func RoutesLocation() (string, error) {
-  if _, err := os.Stat("/tmp/gtfsstatic/routes.txt"); os.IsNotExist(err) {
+  if _, err := os.Stat("/tmp/mta/routes.txt"); os.IsNotExist(err) {
     err := download()
     if err != nil {
       return "", err
     }
   }
 
-  return "/tmp/gtfsstatic/routes.txt", nil
+  return "/tmp/mta/routes.txt", nil
 }
 
 func StopsLocation() (string, error) {
-  if _, err := os.Stat("/tmp/gtfsstatic/stops.txt"); os.IsNotExist(err) {
+  if _, err := os.Stat("/tmp/mta/stops.txt"); os.IsNotExist(err) {
     err := download()
     if err != nil {
       return "", err
     }
   }
 
-  return "/tmp/gtfsstatic/stops.txt", nil
+  return "/tmp/mta/stops.txt", nil
 }
 
 func download() error {
   log.Println("Static GTFS files do not exist, downloading to /tmp")
 
-  if _, err := os.Stat("/tmp/gtfsstatic"); os.IsNotExist(err) {
-    err = os.Mkdir("/tmp/gtfsstatic", os.ModePerm)
+  if _, err := os.Stat("/tmp/mta"); os.IsNotExist(err) {
+    err = os.Mkdir("/tmp/mta", os.ModePerm)
     if err != nil {
       return err
     }
   }
 
-  out, err := os.Create("/tmp/gtfsstatic/static.zip")
+  out, err := os.Create("/tmp/mta/static.zip")
   if err != nil {
     return err
   }
@@ -59,7 +59,7 @@ func download() error {
     return err
   }
 
-  _, err = unzip("/tmp/gtfsstatic/static.zip", "/tmp/gtfsstatic")
+  _, err = unzip("/tmp/mta/static.zip", "/tmp/mta")
   if err != nil {
     return err
   }

@@ -3,7 +3,7 @@ FROM golang:1.9-alpine
 # GOPATH = /go in the golang image
 # also $GOPATH/bin has been added to path
 
-WORKDIR /go/src/github.com/loganwilliams/where-are-the-trains/server
+WORKDIR /go/src/github.com/loganwilliams/adviceservisory/server
 
 # copy server src to WORKDIR in container
 COPY . .
@@ -13,6 +13,7 @@ COPY . .
 RUN apk add --no-cache git \
 && go get github.com/golang/protobuf/proto \
 && go get github.com/paulmach/go.geojson \
+&& go get -d -v \
 && apk del git
 
 # compile and install server binary within container

@@ -232,7 +232,7 @@ func LiveUpdates(db *sql.DB) ([]*TripUpdate, error) {
             LEFT OUTER JOIN routes ON trips.route = routes.id
             LEFT OUTER JOIN stops ON trip_updates.stop = stops.id
             WHERE timestamp > $1
-            ORDER BY trip_id, timestamp`
+            ORDER BY trip_id, timestamp DESC`
 
     liveUpdatesStmt, err = db.Prepare(stmt)
     if err != nil {

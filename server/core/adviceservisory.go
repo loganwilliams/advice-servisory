@@ -44,12 +44,22 @@ func (a *AdviceServisory) InitDb() {
     a.Config.DB.Host, a.Config.DB.Username, a.Config.DB.Password, a.Config.DB.Name)
 
   a.DB, err = sql.Open(env.DB_DRIVER, dbInfo)
+
   if err != nil {
-    panic(err)
+    log.Println("error opening connection")
+    log.Println(err)
+    time.Sleep(2 * time.Second)
+    a.InitDb()
   }
+
   err = a.DB.Ping()
+
   if err != nil {
-    panic(err)
+    log.Println("error pinging")
+    log.Println(err)
+    time.Sleep(2 * time.Second)
+    a.InitDb()
   }
+
   log.Println("Successfully connected!")
 }
