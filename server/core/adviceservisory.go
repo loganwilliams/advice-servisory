@@ -140,6 +140,38 @@ func (a *AdviceServisory) StationHandler(w http.ResponseWriter, r *http.Request)
   fmt.Fprintf(w, "%s", pretty.Json(string(response)))
 }
 
+func (a *AdviceServisory) LiveUpdatesHandler(w http.ResponseWriter, r *http.Request) {
+  updates, err := types.LiveUpdates(a.DB)
+
+  if err != nil {
+    log.Panic("Error querying update", err)
+  }
+
+  response, err := json.Marshal(updates)
+
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
+
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
+
+func (a *AdviceServisory) LiveGeojsonHandler(w http.ResponseWriter, r *http.Request) {
+  updates, err := types.LiveUpdates(a.DB)
+  geojson := types.MakeGeoJSON(updates)  
+
+  if err != nil {
+    log.Panic("Error querying update", err)
+  }
+
+  response, err := json.Marshal(geojson)
+
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
+
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
 
 func (a *AdviceServisory) InitDb() {
     a.Config = env.NewConfig()
