@@ -22,6 +22,7 @@ var (
   routeReadAllStmt *sql.Stmt
 )
 
+// TODO check if this table exists and only import if it does not
 func CreateAndPopulateRoutesTable(db *sql.DB) error {
   // Create import table
   mkImportTableStmt := `CREATE SCHEMA IF NOT EXISTS import;
