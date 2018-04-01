@@ -8,12 +8,15 @@ services:
       - "5432:5432"
     build:
       context: ./database/
+    image: postgres
     restart: always
 
   server:
     env_file: .env
     build:
       context: ./server/
+    volumes:
+      - ./server:/go/src/github.com/loganwilliams/adviceservisory/server
     ports:
       - "8080:8080"
     depends_on:
@@ -22,8 +25,12 @@ services:
       - "database:${DBHOST}"
 
   client:
+    env_file: .env
     build:
       context: ./client/
+    volumes:
+      - ./client:/client/
+      - /client/node_modules
     ports:
       - "3000:3000"
     depends_on:

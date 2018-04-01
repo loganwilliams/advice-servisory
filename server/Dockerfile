@@ -11,6 +11,7 @@ COPY . .
 # since we need to install a go binary (fresh, an fs watcher for development)
 # we need to install git, go get the fs watcher, and delete git to reduce image space
 RUN apk add --no-cache git \
+&& go get github.com/pilu/fresh \
 && go get github.com/golang/protobuf/proto \
 && go get github.com/paulmach/go.geojson \
 && go get -d -v \
@@ -23,4 +24,4 @@ RUN go install -v
 EXPOSE 8080
 
 # run the fs watcher, fresh, to recompile go files on all changes
-CMD ["server"]
+CMD ["fresh"]
