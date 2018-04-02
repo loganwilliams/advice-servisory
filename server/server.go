@@ -18,24 +18,24 @@ func main() {
     go app.Start(ticker)
 
     r := mux.NewRouter()
-    r.HandleFunc("/routes", app.AllRoutesHandler)
-    r.HandleFunc("/route/{route_id}", app.RouteHandler)
+    r.HandleFunc("/api/routes", app.AllRoutesHandler)
+    r.HandleFunc("/api/route/{route_id}", app.RouteHandler)
     // r.HandleFunc("/route/{route_id}/{date}")
     // r.HandleFunc("/route/{route_id}/live")
     // r.HandleFunc("/route/{route_id}/live/geojson")
 
-    r.HandleFunc("/trips", app.AllTripsHandler)
-    r.HandleFunc("/trip/{trip_id}", app.TripUpdateHandler)
+    r.HandleFunc("/api/trips", app.AllTripsHandler)
+    r.HandleFunc("/api/trip/{trip_id}", app.TripUpdateHandler)
     // r.HandleFunc("/trip/{trip_id}/{date}")
 
     // r.HandleFunc("/history/{date}")
     // r.HandleFunc("/history/{date}/geojson")
-    r.HandleFunc("/live", app.LiveUpdatesHandler)
-    r.HandleFunc("/live/geojson", app.LiveUpdatesHandlerGJ)
+    r.HandleFunc("/api/live", app.LiveUpdatesHandler)
+    r.HandleFunc("/api/live/geojson", app.LiveUpdatesHandlerGJ)
 
-    r.HandleFunc("/stops", app.AllStopsHandler)
+    r.HandleFunc("/api/stops", app.AllStopsHandler)
     // r.HandleFunc("/stop/{stop_id}", app.StopHandler)
-    r.HandleFunc("/station/{station_id}", app.StationHandler)
+    r.HandleFunc("/api/station/{station_id}", app.StationHandler)
     // r.HandleFunc("/station/{station_id}/today")
     // r.HandleFunc("/station/{station_id}/{date}")
 

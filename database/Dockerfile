@@ -1,5 +1,7 @@
 FROM postgres
 
+WORKDIR /tmp/mta
+
 RUN apt-get -qq update
 RUN apt-get -qq install unzip
 

@@ -8,6 +8,7 @@ import (
   "strconv"
   "strings"
   "sync"
+  "errors"
 
   "github.com/loganwilliams/adviceservisory/server/gtfsstatic"
   "github.com/paulmach/go.geo"
@@ -27,12 +28,18 @@ func (r *Route) Measure(s *Stop) (float64, error) {
     routeCode = "6"
   } else if routeCode == "7X" {
     routeCode = "7"
+  } else if routeCode == "W" {
+    routeCode = "N"
   }
 
   path, err := getLinePath(routeCode)
 
   if err != nil {
     return -1.0, err
+  }
+
+  if path == nil {
+    return -1.0, errors.New("nil path")
   }
 
   p := projectPoint(float64(s.Latitude), float64(s.Longitude))
