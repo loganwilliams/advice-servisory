@@ -8,8 +8,9 @@
 
 svg {
   display: block;
-  width: 500px;
-  height: 400px;
+  /*width: 500px;*/
+  /*height: 400px;*/
+  cursor: none;
 }
 
 .line-block {
@@ -46,4 +47,14 @@ body {
   stroke: none;
   fill: #9BC;
   font-size: 8px;
+}
+
+.tooltip {
+  stroke: #579;
+}
+
+.tooltip text {
+  stroke: none;
+  fill: #579;
+  font-size: 10px;
 }
