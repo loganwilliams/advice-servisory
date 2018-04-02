@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import TrainMap from './TrainMap';
+import MareyDiagram from './MareyDiagram';
 import registerServiceWorker from './registerServiceWorker';
 
-ReactDOM.render(<TrainMap />, document.getElementById('root'));
+ReactDOM.render(<MareyDiagram />, document.getElementById('root'));
 registerServiceWorker();
