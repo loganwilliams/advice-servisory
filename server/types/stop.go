@@ -104,6 +104,36 @@ func DropStopsTable(db *sql.DB) error {
   return nil
 }
 
+func (s *Stop) Insert(db *sql.DB) error {
+  stmt := `INSERT INTO stops(
+    id,
+    name,
+    station,
+    latitude,
+    longitude)
+  VALUES ($1, $2, $3, $4, $5)`
+
+  insertStmt, err := db.Prepare(stmt)
+
+  if err != nil {
+    log.Fatal("error preparing statement", err)
+    return err
+  }
+
+  if s.Station == "" {
+    s.Station = s.Id[:len(s.Id)-1]
+  }
+
+  _, err = insertStmt.Exec(s.Id, s.Name, s.Station, s.Latitude, s.Longitude)
+
+  if err != nil {
+    log.Fatal("error executing statement", err)
+    return err
+  }
+
+  return nil
+}
+
 func ReadAllStops(db *sql.DB) ([]*Stop, error) {
   var (
     stops []*Stop = []*Stop{}
@@ -154,4 +184,34 @@ func ReadAllStops(db *sql.DB) ([]*Stop, error) {
   }
 
   return stops, nil
+}
+
+func (s *Stop) GetDetails(db *sql.DB) {
+  stmt := `SELECT 
+    id,
+    name,
+    station,
+    latitude,
+    longitude
+  FROM stops
+  WHERE id = $1`
+
+  stopStmt, err := db.Prepare(stmt)
+
+  if err != nil {
+    log.Fatal("error preparing statement: ", err)
+  }
+
+  row := stopStmt.QueryRow(s.Id)
+
+  err = row.Scan(
+    &s.Id,
+    &s.Name,
+    &s.Station,
+    &s.Latitude,
+    &s.Longitude)
+
+  if err != nil {
+    log.Fatal("error scanning result:", err)
+  }
 }

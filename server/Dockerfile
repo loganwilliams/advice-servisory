@@ -14,6 +14,7 @@ RUN apk add --no-cache git \
 && go get github.com/pilu/fresh \
 && go get github.com/golang/protobuf/proto \
 && go get github.com/paulmach/go.geojson \
+&& go get github.com/paulmach/go.geo \
 && go get -d -v \
 && apk del git
 

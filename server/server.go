@@ -36,6 +36,8 @@ func main() {
     r.HandleFunc("/stops", app.AllStopsHandler)
     // r.HandleFunc("/stop/{stop_id}", app.StopHandler)
     r.HandleFunc("/station/{station_id}", app.StationHandler)
+    // r.HandleFunc("/station/{station_id}/today")
+    // r.HandleFunc("/station/{station_id}/{date}")
 
     http.Handle("/", r)
 

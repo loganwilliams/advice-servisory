@@ -46,7 +46,7 @@ func DropTripsTable(db *sql.DB) error {
   return nil
 }
 
-func (t *Trip) Create(db *sql.DB) error {
+func (t *Trip) Insert(db *sql.DB) error {
   stmt := `INSERT INTO trips(
     id,
     route,
@@ -68,13 +68,14 @@ func (t *Trip) Create(db *sql.DB) error {
         // sometimes the MTA invents new route names
         // so what we need to do is
         // add that new bullshit route
+        log.Println("Inserting unexpected new route.")
         err := t.Route.Insert(db)
 
         if err != nil {
           log.Fatal("Could not insert new route", err)
         }
 
-        return t.Create(db)
+        return t.Insert(db)
       }
     }
 
@@ -95,7 +96,7 @@ func (t *Trip) Upsert(db *sql.DB) error {
   }
 
   // if we are here, we know that the trip doesn't exist yet
-  return t.Create(db)
+  return t.Insert(db)
 }
 
 func (t *Trip) Exists(db *sql.DB) (bool, error) {

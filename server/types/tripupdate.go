@@ -5,6 +5,7 @@ import (
   "log"
   "time"
 
+  "github.com/lib/pq"
   "github.com/paulmach/go.geojson"
 )
 
@@ -14,6 +15,7 @@ type TripUpdate struct {
   Trip      *Trip     `json:"trip"`
   Stop      *Stop     `json:"stop"`
   Timestamp time.Time `json:"timestamp"`
+  Progress  float64   `json:"progress"`
 }
 
 var (
@@ -29,7 +31,8 @@ func CreateTripUpdatesTable(db *sql.DB) error {
     id serial primary key,
     trip_id varchar(100) references trips(id),
     stop varchar(10) references stops(id),
-    timestamp timestamptz not null
+    timestamp timestamptz not null,
+    progress float
     )`
 
   _, err := db.Exec(mkTripUpdateTableStmt)
@@ -54,8 +57,9 @@ func (tu *TripUpdate) Insert(db *sql.DB) error {
   stmt := `INSERT INTO trip_updates(
       trip_id,
       stop,
-      timestamp)
-    SELECT CAST($1 AS VARCHAR), CAST($2 AS VARCHAR), $3
+      timestamp,
+      progress)
+    SELECT CAST($1 AS VARCHAR), CAST($2 AS VARCHAR), $3, $4
       WHERE
         NOT EXISTS (
           SELECT * FROM trip_updates WHERE
@@ -68,7 +72,27 @@ func (tu *TripUpdate) Insert(db *sql.DB) error {
     return err
   }
 
-  _, err = createStmt.Exec(tu.Trip.Id, tu.Stop.Id, tu.Timestamp)
+  _, err = createStmt.Exec(tu.Trip.Id, tu.Stop.Id, tu.Timestamp, tu.Progress)
+
+  if err != nil {
+    if err, ok := err.(*pq.Error); ok {
+      if err.Code.Name() == "foreign_key_violation" {
+        // okay so the deal is like this
+        // sometimes the MTA invents new stop names
+        // so what we need to do is
+        // add that new bullshit stop
+        log.Println("Inserting unexpected new stop.")
+        err := tu.Stop.Insert(db)
+
+        if err != nil {
+          log.Fatal("Could not insert new stop", err)
+        }
+
+        return tu.Insert(db)
+      }
+    }
+
+  }
 
   return err
 }
@@ -136,6 +160,7 @@ func (s *Stop) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
               trip_id,
               stop,
               timestamp,
+              progress,
               direction,
               routes.id AS route_id,
               COALESCE(short_name, '') AS short_name,
@@ -176,6 +201,7 @@ func (s *Stop) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
       &update.Trip.Id,
       &update.Stop.Id,
       &update.Timestamp,
+      &update.Progress,
       &update.Trip.Direction,
       &update.Trip.Route.Id,
       &update.Trip.Route.ShortName,
@@ -215,6 +241,7 @@ func LiveUpdates(db *sql.DB) ([]*TripUpdate, error) {
               trip_id,
               stop, 
               timestamp, 
+              progress,
               direction,
               routes.id AS route_id,
               COALESCE(short_name, '') AS short_name,
@@ -256,6 +283,7 @@ func LiveUpdates(db *sql.DB) ([]*TripUpdate, error) {
       &update.Trip.Id,
       &update.Stop.Id,
       &update.Timestamp,
+      &update.Progress,
       &update.Trip.Direction,
       &update.Trip.Route.Id,
       &update.Trip.Route.ShortName,
@@ -296,6 +324,7 @@ func (t *Trip) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
               trip_id,
               stop,
               timestamp,
+              progress,
               direction,
               routes.id AS route_id,
               COALESCE(short_name, '') AS short_name,
@@ -336,6 +365,7 @@ func (t *Trip) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
       &update.Trip.Id,
       &update.Stop.Id,
       &update.Timestamp,
+      &update.Progress,
       &update.Trip.Direction,
       &update.Trip.Route.Id,
       &update.Trip.Route.ShortName,
@@ -375,6 +405,7 @@ func (r *Route) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
               trip_id,
               stop,
               timestamp,
+              progress,
               direction,
               routes.id AS route_id,
               COALESCE(short_name, '') AS short_name,
@@ -415,6 +446,7 @@ func (r *Route) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
       &update.Trip.Id,
       &update.Stop.Id,
       &update.Timestamp,
+      &update.Progress,
       &update.Trip.Direction,
       &update.Trip.Route.Id,
       &update.Trip.Route.ShortName,

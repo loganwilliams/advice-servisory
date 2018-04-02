@@ -31,6 +31,17 @@ func StopsLocation() (string, error) {
   return "/tmp/mta/stops.txt", nil
 }
 
+func LinesLocation() (string, error) {
+  if _, err := os.Stat("/tmp/mta/shapes.txt"); os.IsNotExist(err) {
+    err := download()
+    if err != nil {
+      return "", err
+    }
+  }
+
+  return "/tmp/mta/shapes.txt", nil
+}
+
 func download() error {
   log.Println("Static GTFS files do not exist, downloading to /tmp")
 
