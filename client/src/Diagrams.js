@@ -4,7 +4,7 @@ import './Diagrams.css';
 
 class Diagrams extends Component {
   render() {
-    let lines = ["1", "2", "4", "5", "6", "7", "A", "C", "D", "F", "E","G", "J", "L", "M", "N", "Q", "R", "Z"];
+    let lines = ["1", "2", "3", "4", "5", "6", "7", "A", "B", "C", "D", "F", "E", "G", "J", "L", "M", "N", "Q", "R", "W", "Z"];
     let graphs = []
 
     for (let i = 0; i < lines.length; i++) {

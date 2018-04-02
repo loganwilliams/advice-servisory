@@ -16,7 +16,7 @@ class MareyDiagram extends Component {
   }
 
   update() {
-    fetch("http://localhost:8080/route/" + this.props.route)
+    fetch("http://serviceadvisory.nyc/api/route/" + this.props.route)
       .then(response => response.json())
       .then(json => {
         if (json.length > 0) {
