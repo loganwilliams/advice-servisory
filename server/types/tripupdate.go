@@ -177,7 +177,8 @@ func (s *Stop) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
             LEFT OUTER JOIN trips ON trip_updates.trip_id = trips.id
             LEFT OUTER JOIN routes ON trips.route = routes.id
             LEFT OUTER JOIN stops ON trip_updates.stop = stops.id
-            WHERE stops.station = $1`
+            WHERE stops.station = $1
+            ORDER BY timestamp DESC`
 
     readTripUpdateFromStationStmt, err = db.Prepare(stmt)
     if err != nil {
@@ -341,7 +342,8 @@ func (t *Trip) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
             LEFT OUTER JOIN trips ON trip_updates.trip_id = trips.id
             LEFT OUTER JOIN routes ON trips.route = routes.id
             LEFT OUTER JOIN stops ON trip_updates.stop = stops.id
-            WHERE trip_id = $1 AND timestamp > $2`
+            WHERE trip_id = $1 AND timestamp > $2
+            ORDER BY timestamp DESC`
 
     readTripUpdateStmt, err = db.Prepare(stmt)
     if err != nil {
@@ -422,7 +424,8 @@ func (r *Route) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
             LEFT OUTER JOIN trips ON trip_updates.trip_id = trips.id
             LEFT OUTER JOIN routes ON trips.route = routes.id
             LEFT OUTER JOIN stops ON trip_updates.stop = stops.id
-            WHERE trips.route = $1 AND timestamp > $2`
+            WHERE trips.route = $1 AND timestamp > $2
+            ORDER BY timestamp DESC`
 
     readRouteTripUpdateStmt, err = db.Prepare(stmt)
     if err != nil {
