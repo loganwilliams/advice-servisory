@@ -3,12 +3,12 @@ package types
 import (
   "bufio"
   "encoding/csv"
+  "errors"
   "io"
   "os"
   "strconv"
   "strings"
   "sync"
-  "errors"
 
   "github.com/loganwilliams/adviceservisory/server/gtfsstatic"
   "github.com/paulmach/go.geo"
@@ -39,7 +39,11 @@ func (r *Route) Measure(s *Stop) (float64, error) {
   }
 
   if path == nil {
-    return -1.0, errors.New("nil path")
+    return -1.0, errors.New("Nil path")
+  }
+
+  if s.Latitude == 0 && s.Longitude == 0 {
+    return -1.0, errors.New("No station location")
   }
 
   p := projectPoint(float64(s.Latitude), float64(s.Longitude))
