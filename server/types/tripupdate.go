@@ -425,7 +425,7 @@ func (r *Route) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
             LEFT OUTER JOIN routes ON trips.route = routes.id
             LEFT OUTER JOIN stops ON trip_updates.stop = stops.id
             WHERE trips.route = $1 AND timestamp > $2
-            ORDER BY timestamp DESC`
+            ORDER BY trip_id, timestamp DESC`
 
     readRouteTripUpdateStmt, err = db.Prepare(stmt)
     if err != nil {

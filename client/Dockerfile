@@ -4,7 +4,8 @@ WORKDIR /client
 
 COPY package*.json ./
 
-RUN npm install -qy
+RUN npm install
+ENV NODE_PATH=/client/node_modules
 
 COPY . .
 

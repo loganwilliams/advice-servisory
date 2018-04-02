@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import MareyDiagram from './MareyDiagram';
+import Diagrams from './Diagrams';
 import registerServiceWorker from './registerServiceWorker';
 
-ReactDOM.render(<MareyDiagram />, document.getElementById('root'));
+ReactDOM.render(<Diagrams />, document.getElementById('root'));
 registerServiceWorker();

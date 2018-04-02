@@ -5,6 +5,7 @@ import (
   "fmt"
   "log"
 
+  "github.com/lib/pq"
   "github.com/loganwilliams/adviceservisory/server/gtfsstatic"
 )
 
@@ -212,6 +213,21 @@ func (s *Stop) GetDetails(db *sql.DB) {
     &s.Longitude)
 
   if err != nil {
-    log.Fatal("error scanning result:", err)
+    if err, ok := err.(*pq.Error); ok {
+      if err.Code.Name() == "no_data" {
+        // okay so the deal is like this
+        // sometimes the MTA invents new stop names
+        // so what we need to do is
+        // add that new bullshit stop
+        log.Println("Inserting unexpected new stop.")
+        err := s.Insert(db)
+
+        if err != nil {
+          log.Fatal("Could not insert new stop", err)
+        }
+
+        s.GetDetails(db)
+      }
+    }
   }
 }

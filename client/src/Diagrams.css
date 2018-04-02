@@ -1,0 +1,49 @@
+.graphs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-left: 1em;
+  margin-top: 1em;
+}
+
+svg {
+  display: block;
+  width: 500px;
+  height: 400px;
+}
+
+.line-block {
+  margin-right: -50px;
+}
+
+.label {
+  text-align: center;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+body {
+  background-color: #0A1520;
+  color: white;
+}
+
+.time-tick {
+  stroke: #346;
+}
+
+.time-label {
+  stroke: none;
+  fill: #9BC;
+  font-size: 12px;
+
+}
+
+.prog-tick {
+  stroke: #346;
+}
+
+.prog-label {
+  stroke: none;
+  fill: #9BC;
+  font-size: 8px;
+}
