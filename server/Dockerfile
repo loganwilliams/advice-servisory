@@ -15,6 +15,7 @@ RUN apk add --no-cache git \
 && go get github.com/golang/protobuf/proto \
 && go get github.com/paulmach/go.geojson \
 && go get github.com/paulmach/go.geo \
+&& go get github.com/pkg/profile \
 && go get -d -v \
 && apk del git
 

@@ -1,47 +1,56 @@
 package main
 
 import (
-    "log"
-    "net/http"
-    "time"
+  "log"
+  "net/http"
+  "time"
 
-    "github.com/gorilla/mux"
-    "github.com/loganwilliams/adviceservisory/server/core"
+  "github.com/gorilla/mux"
+  "github.com/loganwilliams/adviceservisory/server/core"
+  "github.com/pkg/profile"
 )
 
 func main() {
-    app := core.NewAdviceServisory()
-    app.Setup()
+  profile := profile.Start(profile.MemProfile)
 
-    // begin background polling ETL processes
-    ticker := time.NewTicker(30 * time.Second)
-    go app.Start(ticker)
+  timer := time.NewTimer(600 * time.Second)
+  go func() {
+    <-timer.C
+    profile.Stop()
+  }()
 
-    r := mux.NewRouter()
-    r.HandleFunc("/api/routes", app.AllRoutesHandler)
-    r.HandleFunc("/api/route/{route_id}", app.RouteHandler)
-    // r.HandleFunc("/route/{route_id}/{date}")
-    // r.HandleFunc("/route/{route_id}/live")
-    // r.HandleFunc("/route/{route_id}/live/geojson")
+  app := core.NewAdviceServisory()
+  app.Setup()
 
-    r.HandleFunc("/api/trips", app.AllTripsHandler)
-    r.HandleFunc("/api/trip/{trip_id}", app.TripUpdateHandler)
-    // r.HandleFunc("/trip/{trip_id}/{date}")
+  // begin background polling ETL processes
+  ticker := time.NewTicker(30 * time.Second)
+  go app.Start(ticker)
 
-    // r.HandleFunc("/history/{date}")
-    // r.HandleFunc("/history/{date}/geojson")
-    r.HandleFunc("/api/live", app.LiveUpdatesHandler)
-    r.HandleFunc("/api/live/geojson", app.LiveUpdatesHandlerGJ)
+  r := mux.NewRouter()
+  r.HandleFunc("/api/routes", app.AllRoutesHandler)
+  r.HandleFunc("/api/route/{route_id}", app.RouteHandler)
+  // r.HandleFunc("/route/{route_id}/{date}")
+  // r.HandleFunc("/route/{route_id}/live")
+  // r.HandleFunc("/route/{route_id}/live/geojson")
 
-    r.HandleFunc("/api/stops", app.AllStopsHandler)
-    // r.HandleFunc("/stop/{stop_id}", app.StopHandler)
-    r.HandleFunc("/api/station/{station_id}", app.StationHandler)
-    // r.HandleFunc("/station/{station_id}/today")
-    // r.HandleFunc("/station/{station_id}/{date}")
+  r.HandleFunc("/api/trips", app.AllTripsHandler)
+  r.HandleFunc("/api/trip/{trip_id}", app.TripUpdateHandler)
+  // r.HandleFunc("/trip/{trip_id}/{date}")
 
-    http.Handle("/", r)
+  // r.HandleFunc("/history/{date}")
+  // r.HandleFunc("/history/{date}/geojson")
+  r.HandleFunc("/api/live", app.LiveUpdatesHandler)
+  r.HandleFunc("/api/live/geojson", app.LiveUpdatesHandlerGJ)
 
-    log.Fatal(http.ListenAndServe(":8080", nil))
+  r.HandleFunc("/api/stops", app.AllStopsHandler)
+  // r.HandleFunc("/stop/{stop_id}", app.StopHandler)
+  r.HandleFunc("/api/station/{station_id}", app.StationHandler)
+  // r.HandleFunc("/station/{station_id}/today")
+  // r.HandleFunc("/station/{station_id}/{date}")
 
-    defer app.DB.Close()
+  http.Handle("/", r)
+
+  log.Fatal(http.ListenAndServe(":8080", nil))
+
+  defer app.DB.Close()
 }
