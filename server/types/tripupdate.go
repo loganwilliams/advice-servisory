@@ -409,20 +409,13 @@ func (r *Route) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
               timestamp,
               progress,
               direction,
-              routes.id AS route_id,
-              COALESCE(short_name, '') AS short_name,
-              COALESCE(routes.name, '') AS route_name,
-              COALESCE(description, '') AS description,
-              COALESCE(type, 0) AS type,
-              COALESCE(url, '') AS url,
-              COALESCE(color, '') AS color,
+              route,
               stops.name AS stop_name,
               stops.latitude AS latitude,
               stops.longitude AS longitude,
               stops.station AS station
             FROM trip_updates
             LEFT OUTER JOIN trips ON trip_updates.trip_id = trips.id
-            LEFT OUTER JOIN routes ON trips.route = routes.id
             LEFT OUTER JOIN stops ON trip_updates.stop = stops.id
             WHERE trips.route = $1 AND timestamp > $2
             ORDER BY trip_id, timestamp DESC`
@@ -452,12 +445,6 @@ func (r *Route) ReadUpdates(db *sql.DB) ([]*TripUpdate, error) {
       &update.Progress,
       &update.Trip.Direction,
       &update.Trip.Route.Id,
-      &update.Trip.Route.ShortName,
-      &update.Trip.Route.Name,
-      &update.Trip.Route.Description,
-      &update.Trip.Route.Type,
-      &update.Trip.Route.URL,
-      &update.Trip.Route.Color,
       &update.Stop.Name,
       &update.Stop.Latitude,
       &update.Stop.Longitude,

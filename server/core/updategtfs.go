@@ -147,6 +147,8 @@ func getGTFS(url string, retries int) (*transit_realtime.FeedMessage, error) {
 
   if err != nil {
     fmt.Printf("failed to fetch for url %q", url)
+    time.Sleep(time.Second)
+    return getGTFS(url, retries-1)
   }
 
   buf := new(bytes.Buffer)
