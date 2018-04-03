@@ -7,18 +7,9 @@ import (
 
   "github.com/gorilla/mux"
   "github.com/loganwilliams/adviceservisory/server/core"
-  "github.com/pkg/profile"
 )
 
 func main() {
-  profile := profile.Start(profile.MemProfile)
-
-  timer := time.NewTimer(600 * time.Second)
-  go func() {
-    <-timer.C
-    profile.Stop()
-  }()
-
   app := core.NewAdviceServisory()
   app.Setup()
 

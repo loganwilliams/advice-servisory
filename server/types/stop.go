@@ -19,6 +19,8 @@ type Stop struct {
 
 var (
   stopReadAllStmt *sql.Stmt
+  insertStmt      *sql.Stmt
+  stopStmt        *sql.Stmt
 )
 
 func CreateAndPopulateStopsTable(db *sql.DB) error {
@@ -70,7 +72,7 @@ func CreateAndPopulateStopsTable(db *sql.DB) error {
   }
 
   // insert into routes table
-  insertStmt := `INSERT INTO stops(
+  importStmt := `INSERT INTO stops(
     id,
     name,
     station,
@@ -85,7 +87,7 @@ func CreateAndPopulateStopsTable(db *sql.DB) error {
   FROM import.stops
   WHERE import.stops.location_type = '0'`
 
-  _, err = db.Exec(insertStmt)
+  _, err = db.Exec(importStmt)
   if err != nil {
     log.Fatal("Error inserting stops", err)
   }
@@ -106,19 +108,21 @@ func DropStopsTable(db *sql.DB) error {
 }
 
 func (s *Stop) Insert(db *sql.DB) error {
-  stmt := `INSERT INTO stops(
-    id,
-    name,
-    station,
-    latitude,
-    longitude)
-  VALUES ($1, $2, $3, $4, $5)`
+  if insertStmt == nil {
+    stmt := `INSERT INTO stops(
+      id,
+      name,
+      station,
+      latitude,
+      longitude)
+    VALUES ($1, $2, $3, $4, $5)`
 
-  insertStmt, err := db.Prepare(stmt)
+    insertStmt, err := db.Prepare(stmt)
 
-  if err != nil {
-    log.Fatal("error preparing statement", err)
-    return err
+    if err != nil {
+      log.Fatal("error preparing statement", err)
+      return err
+    }
   }
 
   if s.Station == "" {
@@ -188,19 +192,21 @@ func ReadAllStops(db *sql.DB) ([]*Stop, error) {
 }
 
 func (s *Stop) GetDetails(db *sql.DB) {
-  stmt := `SELECT 
-    id,
-    name,
-    station,
-    latitude,
-    longitude
-  FROM stops
-  WHERE id = $1`
+  if stopStmt == nil {
+    stmt := `SELECT 
+      id,
+      name,
+      station,
+      latitude,
+      longitude
+    FROM stops
+    WHERE id = $1`
 
-  stopStmt, err := db.Prepare(stmt)
+    stopStmt, err := db.Prepare(stmt)
 
-  if err != nil {
-    log.Fatal("error preparing statement: ", err)
+    if err != nil {
+      log.Fatal("error preparing statement: ", err)
+    }
   }
 
   row := stopStmt.QueryRow(s.Id)
