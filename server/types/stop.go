@@ -108,6 +108,8 @@ func DropStopsTable(db *sql.DB) error {
 }
 
 func (s *Stop) Insert(db *sql.DB) error {
+  var err error
+
   if insertStmt == nil {
     stmt := `INSERT INTO stops(
       id,
@@ -117,7 +119,7 @@ func (s *Stop) Insert(db *sql.DB) error {
       longitude)
     VALUES ($1, $2, $3, $4, $5)`
 
-    insertStmt, err := db.Prepare(stmt)
+    insertStmt, err = db.Prepare(stmt)
 
     if err != nil {
       log.Fatal("error preparing statement", err)
@@ -192,6 +194,8 @@ func ReadAllStops(db *sql.DB) ([]*Stop, error) {
 }
 
 func (s *Stop) GetDetails(db *sql.DB) {
+  var err error
+
   if stopStmt == nil {
     stmt := `SELECT 
       id,
@@ -202,7 +206,7 @@ func (s *Stop) GetDetails(db *sql.DB) {
     FROM stops
     WHERE id = $1`
 
-    stopStmt, err := db.Prepare(stmt)
+    stopStmt, err = db.Prepare(stmt)
 
     if err != nil {
       log.Fatal("error preparing statement: ", err)

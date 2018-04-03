@@ -55,6 +55,8 @@ func DropTripUpdatesTable(db *sql.DB) error {
 }
 
 func (tu *TripUpdate) Insert(db *sql.DB) error {
+  var err error
+
   if createStmt == nil {
     stmt := `INSERT INTO trip_updates(
         trip_id,
@@ -67,7 +69,7 @@ func (tu *TripUpdate) Insert(db *sql.DB) error {
             SELECT * FROM trip_updates WHERE
             trip_id = $1 AND stop = $2)`
 
-    createStmt, err := db.Prepare(stmt)
+    createStmt, err = db.Prepare(stmt)
 
     if err != nil {
       log.Fatal("error preparing statement,", err)

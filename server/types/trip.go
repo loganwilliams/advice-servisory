@@ -21,7 +21,7 @@ const (
 var (
   tripReadAllStmt *sql.Stmt
   existsStmt      *sql.Stmt
-  insertStmt      *sql.Stmt
+  tripInsertStmt  *sql.Stmt
 )
 
 func CreateTripsTable(db *sql.DB) error {
@@ -49,21 +49,23 @@ func DropTripsTable(db *sql.DB) error {
 }
 
 func (t *Trip) Insert(db *sql.DB) error {
-  if insertStmt == nil {
+  var err error
+
+  if tripInsertStmt == nil {
     stmt := `INSERT INTO trips(
       id,
       route,
       direction
     ) VALUES ($1, $2, $3)`
 
-    insertStmt, err := db.Prepare(stmt)
+    tripInsertStmt, err = db.Prepare(stmt)
 
     if err != nil {
       return err
     }
   }
 
-  _, err = insertStmt.Exec(t.Id, t.Route.Id, t.Direction)
+  _, err = tripInsertStmt.Exec(t.Id, t.Route.Id, t.Direction)
 
   if err != nil {
     if err, ok := err.(*pq.Error); ok {
@@ -104,9 +106,11 @@ func (t *Trip) Upsert(db *sql.DB) error {
 }
 
 func (t *Trip) Exists(db *sql.DB) (bool, error) {
+  var err error
+
   if existsStmt == nil {
     stmt := `SELECT EXISTS(SELECT 1 FROM trips WHERE id=$1)`
-    existsStmt, err := db.Prepare(stmt)
+    existsStmt, err = db.Prepare(stmt)
 
     if err != nil {
       log.Fatal("exists", err)
