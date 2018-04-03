@@ -58,3 +58,8 @@ body {
   fill: #579;
   font-size: 10px;
 }
+
+.train {
+    stroke: #82dae0;
+    fill: none;
+}

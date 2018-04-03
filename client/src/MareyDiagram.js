@@ -78,7 +78,7 @@ class MareyDiagram extends Component {
 
   componentDidMount() {
     this.update();
-    window.setInterval(this.update.bind(this), 10000);
+    window.setInterval(this.update.bind(this), 30000);
   }
 
   update() {
@@ -291,7 +291,7 @@ class MareyDiagram extends Component {
           onMouseMove={this.tooltip}
           onMouseLeave={this.clearTooltip}
         >
-          <g fill="none" stroke={"#" + this.state.data[0].trip.route.color}>
+          <g className={"train " + this.state.data[0].trip.route}>
             {x_legend}
             {y_legend}
             {dompaths}

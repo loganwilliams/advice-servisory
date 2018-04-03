@@ -4,13 +4,13 @@ import './Diagrams.css';
 
 class Diagrams extends Component {
   render() {
-    let lines = ["1", "2", "3", "4", "5", "6", "7", "A", "B", "C", "D", "F", "E","G", "J", "L", "M", "N", "Q", "R", "W"];
+    let lines = ["E","A","B","C","1","2","3","4","5","6","7","G"];
     let graphs = []
 
     for (let i = 0; i < lines.length; i++) {
       graphs.push(<div className="line-block">
         <div className="label">{lines[i] + " Train"}</div> 
-        <MareyDiagram key={"MareyDiagram-" + lines[i]} width={500} height={800} route={lines[i]} direction={-1} /></div>);
+        <MareyDiagram key={"MareyDiagram-" + lines[i]} width={500} height={800} route={lines[i]} direction={1} /></div>);
     }
 
     return (
