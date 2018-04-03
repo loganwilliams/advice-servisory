@@ -24,6 +24,7 @@ var (
   readTripUpdateFromStationStmt *sql.Stmt
   liveUpdatesStmt               *sql.Stmt
   readRouteTripUpdateStmt       *sql.Stmt
+  createStmt                    *sql.Stmt
 )
 
 func CreateTripUpdatesTable(db *sql.DB) error {
@@ -54,22 +55,24 @@ func DropTripUpdatesTable(db *sql.DB) error {
 }
 
 func (tu *TripUpdate) Insert(db *sql.DB) error {
-  stmt := `INSERT INTO trip_updates(
-      trip_id,
-      stop,
-      timestamp,
-      progress)
-    SELECT CAST($1 AS VARCHAR), CAST($2 AS VARCHAR), $3, $4
-      WHERE
-        NOT EXISTS (
-          SELECT * FROM trip_updates WHERE
-          trip_id = $1 AND stop = $2)`
+  if createStmt == nil {
+    stmt := `INSERT INTO trip_updates(
+        trip_id,
+        stop,
+        timestamp,
+        progress)
+      SELECT CAST($1 AS VARCHAR), CAST($2 AS VARCHAR), $3, $4
+        WHERE
+          NOT EXISTS (
+            SELECT * FROM trip_updates WHERE
+            trip_id = $1 AND stop = $2)`
 
-  createStmt, err := db.Prepare(stmt)
+    createStmt, err := db.Prepare(stmt)
 
-  if err != nil {
-    log.Fatal("error preparing statement,", err)
-    return err
+    if err != nil {
+      log.Fatal("error preparing statement,", err)
+      return err
+    }
   }
 
   _, err = createStmt.Exec(tu.Trip.Id, tu.Stop.Id, tu.Timestamp, tu.Progress)
