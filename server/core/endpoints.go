@@ -119,6 +119,45 @@ func (a *AdviceServisory) StationHandler(w http.ResponseWriter, r *http.Request)
   fmt.Fprintf(w, "%s", pretty.Json(string(response)))
 }
 
+func (a *AdviceServisory) TwoStationHandler(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
+  vars := mux.Vars(r)
+  stop1 := &types.Stop{Station: vars["station_id1"]}
+  stop2 := &types.Stop{Station: vars["station_id2"]}
+  updates, err := stop1.UpdatesWithStop(a.DB, stop2)
+
+  if err != nil {
+    log.Panic("Error querying update", err)
+  }
+
+  response, err := json.Marshal(updates)
+
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
+
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
+
+func (a *AdviceServisory) StopHandler(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
+  vars := mux.Vars(r)
+  stop := &types.Stop{Id: vars["stop_id"]}
+  updates, err := stop.ReadUpdates(a.DB)
+
+  if err != nil {
+    log.Panic("Error querying update", err)
+  }
+
+  response, err := json.Marshal(updates)
+
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
+
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
+
 func (a *AdviceServisory) LiveUpdatesHandler(w http.ResponseWriter, r *http.Request) {
   w = setHeaders(w)
   updates, err := types.LiveUpdates(a.DB)

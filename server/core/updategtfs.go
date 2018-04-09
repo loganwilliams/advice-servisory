@@ -66,6 +66,7 @@ func (a *AdviceServisory) AddTripUpdates() error {
 // Returns a list of trains from an unmarshalled protobuf that have had an update within
 // 10 minutes of the time "now".
 func (a *AdviceServisory) trainList(transit *transit_realtime.FeedMessage, now time.Time) (updates []*types.TripUpdate) {
+  trains := make(map[string]bool)
   cutoff := now.Add(-10.0 * time.Minute)
 
   for _, entity := range transit.Entity {
@@ -75,7 +76,10 @@ func (a *AdviceServisory) trainList(transit *transit_realtime.FeedMessage, now t
       // Only include trains that have moved in the last 10 minutes, are reporting times in the present/past
       // and have a line associated with them.
       if update.Timestamp.After(cutoff) && update.Timestamp.Before(now) {
-        updates = append(updates, update)
+        if _, ok := trains[update.Trip.Id]; !ok {
+          trains[update.Trip.Id] = true
+          updates = append(updates, update)
+        }
       }
     }
   }
