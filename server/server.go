@@ -13,6 +13,10 @@ func main() {
   app := core.NewAdviceServisory()
   app.Setup()
 
+  yesterday := time.Now().Add(-24 * time.Hour)
+  go app.AddHistoricalUpdates(yesterday)
+  go app.AddHistoricalUpdates(time.Now())
+
   // begin background polling ETL processes
   ticker := time.NewTicker(30 * time.Second)
   go app.Start(ticker)
@@ -35,9 +39,9 @@ func main() {
 
   r.HandleFunc("/api/stops", app.AllStopsHandler)
   r.HandleFunc("/api/stop/{stop_id}", app.StopHandler)
-  r.HandleFunc("/api/stop/{stop_id}/{date}", app.StopHandler)
+  r.HandleFunc("/api/stop/{stop_id}/{date}", app.StopHandleDater)
   r.HandleFunc("/api/station/{station_id}", app.StationHandler)
-  // r.HandleFunc("/api/station/{station_id}/{date}", app.StationHandler)
+  r.HandleFunc("/api/station/{station_id}/{date}", app.StationHandlerDate)
 
   r.HandleFunc("/api/stations/{station_id1}/{station_id2}", app.TwoStationHandler)
 

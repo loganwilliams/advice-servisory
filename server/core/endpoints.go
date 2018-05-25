@@ -5,6 +5,7 @@ import (
   "fmt"
   "log"
   "net/http"
+  "time"
 
   "github.com/gorilla/mux"
   "github.com/loganwilliams/adviceservisory/server/pretty"
@@ -12,6 +13,9 @@ import (
 
   _ "github.com/lib/pq"
 )
+
+// TODO refactor this to reduce boilerplate
+// TODO redo setHeaders as middleware
 
 func (a *AdviceServisory) AllRoutesHandler(w http.ResponseWriter, r *http.Request) {
   w = setHeaders(w)
@@ -119,6 +123,26 @@ func (a *AdviceServisory) StationHandler(w http.ResponseWriter, r *http.Request)
   fmt.Fprintf(w, "%s", pretty.Json(string(response)))
 }
 
+func (a *AdviceServisory) StationHandlerDate(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
+  vars := mux.Vars(r)
+  stop := &types.Stop{Station: vars["station_id"]}
+  date := time.Parse("2006-01-02", vars["date"])
+  updates, err := stop.ReadUpdatesAtDate(a.DB, date)
+
+  if err != nil {
+    log.Panic("Error querying update", err)
+  }
+
+  response, err := json.Marshal(updates)
+
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
+
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
+
 func (a *AdviceServisory) TwoStationHandler(w http.ResponseWriter, r *http.Request) {
   w = setHeaders(w)
   vars := mux.Vars(r)
@@ -144,6 +168,27 @@ func (a *AdviceServisory) StopHandler(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r)
   stop := &types.Stop{Id: vars["stop_id"]}
   updates, err := stop.ReadUpdates(a.DB)
+
+  if err != nil {
+    log.Panic("Error querying update", err)
+  }
+
+  response, err := json.Marshal(updates)
+
+  if err != nil {
+    log.Panic("Error marshalling json", err)
+  }
+
+  fmt.Fprintf(w, "%s", pretty.Json(string(response)))
+}
+
+func (a *AdviceServisory) StopHandlerDate(w http.ResponseWriter, r *http.Request) {
+  w = setHeaders(w)
+  vars := mux.Vars(r)
+  stop := &types.Stop{Id: vars["stop_id"]}
+  date := time.Parse("2006-01-02", vars["date"])
+
+  updates, err := stop.ReadUpdatesAtDate(a.DB, date)
 
   if err != nil {
     log.Panic("Error querying update", err)

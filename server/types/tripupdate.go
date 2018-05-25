@@ -206,7 +206,107 @@ func (s1 *Stop) UpdatesWithStop(db *sql.DB, s2 *Stop) ([]*TripUpdate, error) {
     }
   }
 
-  rows, err := readUpdatesWithTwoStops.Query(s1.Station, s2.Station, time.Now().Add(-24*time.Hour))
+  rows, err := readUpdatesWithTwoStops.Query(s1.Station, s2.Station, time.Now().Add(-22*time.Hour))
+
+  if err != nil {
+    return updates, err
+  }
+
+  defer rows.Close()
+
+  return scanRowsShort(rows)
+}
+
+func (s *Stop) ReadUpdatesAtDate(db *sql.DB, time.Time *date) ([]*TripUpdate, error) {
+  var (
+    updates []*TripUpdate = []*TripUpdate{}
+    err     error
+  )
+
+  // We might want to query based on the stop or the station,
+  // depending on what values are set in the s Object.
+
+  if readTripUpdateFromStationStmt == nil {
+    stmt := `SELECT
+              trip_updates.id AS id,
+              trip_id,
+              stop,
+              timestamp,
+              progress,
+              direction,
+              route,
+              stops.name AS stop_name,
+              stops.latitude AS latitude,
+              stops.longitude AS longitude,
+              stops.station AS station
+            FROM trip_updates
+            LEFT OUTER JOIN trips ON trip_updates.trip_id = trips.id
+            LEFT OUTER JOIN stops ON trip_updates.stop = stops.id
+            WHERE trip_id IN (
+              SELECT
+                trip_id
+              FROM trip_updates
+              LEFT OUTER JOIN stops ON trip_updates.stop = stops.id
+              WHERE stops.station = $1
+              AND timestamp >= $2
+              AND timestamp < $3)
+            AND timestamp >= $2
+            AND timestamp < $3
+            ORDER BY trip_id, timestamp DESC`
+
+    readTripUpdateFromStationStmt, err = db.Prepare(stmt)
+
+    if err != nil {
+      return updates, err
+    }
+  }
+
+  if readTripUpdateFromStopStmt == nil {
+    stmt := `SELECT
+              trip_updates.id AS id,
+              trip_id,
+              stop,
+              timestamp,
+              progress,
+              direction,
+              route,
+              stops.name AS stop_name,
+              stops.latitude AS latitude,
+              stops.longitude AS longitude,
+              stops.station AS station
+            FROM trip_updates
+            LEFT OUTER JOIN trips ON trip_updates.trip_id = trips.id
+            LEFT OUTER JOIN stops ON trip_updates.stop = stops.id
+            WHERE trip_id IN (
+              SELECT
+                trip_id
+              FROM trip_updates
+              WHERE trip_updates.stop = $1
+              AND timestamp >= $2
+              AND timestamp < $3)
+            AND timestamp >= $2
+            AND timestamp < $3
+            ORDER BY trip_id, timestamp DESC`
+
+    readTripUpdateFromStopStmt, err = db.Prepare(stmt)
+    if err != nil {
+      return updates, err
+    }
+  }
+
+  query := readTripUpdateFromStopStmt
+  queryVal := s.Id
+
+  if s.Id == "" {
+    fmt.Println(s.Station)
+    query = readTripUpdateFromStationStmt
+    queryVal = s.Station
+  }
+
+  startTime := date
+  endTime := date.Add(24*time.Hour)
+
+  rows, err := query.Query(queryVal, startTime, endTime)
 
   if err != nil {
     return updates, err

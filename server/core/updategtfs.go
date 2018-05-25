@@ -14,6 +14,8 @@ import (
   "github.com/loganwilliams/adviceservisory/server/types"
 )
 
+// TODO why are the edges raggedy?
+
 // GetLiveTrains() returns a GeoJSON []byte object with the most recent position of all trains in the NYC Subway, as
 // reported by the MTA's GTFS feed.
 func (a *AdviceServisory) GetTripUpdates() []*types.TripUpdate {
@@ -54,10 +56,73 @@ func (a *AdviceServisory) AddTripUpdates() error {
     err := update.Trip.Upsert(a.DB)
 
     if err != nil {
-      return err
+      // TODO check for unique violation or something else going on?
+      fmt.Println("Error inserting trip: ", err)
     }
 
     update.Insert(a.DB)
+  }
+
+  return nil
+}
+
+func (a *AdviceServisory) AddHistoricalUpdates(date time.Time) error {
+  wrapups := [](string){
+    "",
+    "-bdfm",
+    "-7",
+    "-jz",
+    "-ace",
+    "-nqrw",
+    "-l",
+    "-si",
+    "-g",
+  }
+
+  loc, _ := time.LoadLocation("America/New_York")
+  current := time.Date(date.Year(), date.Month(), date.Day(), 0, 1, 0, 0, loc)
+  fmt.Printf("Adding historical updates for %v...\n", current)
+
+  end := current.Add(24 * time.Hour)
+
+  for current.Before(end) && current.Before(time.Now()) {
+    for _, line := range wrapups {
+      url := "https://datamine-history.s3.amazonaws.com/gtfs" + line + "-" + current.Format("2006-01-02-15-04")
+
+      err := a.DownloadHistoricalUpdates(url, current)
+
+      if err != nil {
+        return err
+      }
+    }
+
+    current = current.Add(5 * time.Minute)
+  }
+
+  fmt.Printf("\t\tdone!\n")
+
+  return nil
+}
+
+func (a *AdviceServisory) DownloadHistoricalUpdates(url string, current time.Time) error {
+  transit, err := getGTFS(url, 1)
+
+  if err != nil {
+    log.Println("Error getting GTFS feed: ", err)
+  } else {
+    updates := a.trainList(transit, current)
+
+    for _, update := range updates {
+      // make sure the trip exists in the DB
+      err := update.Trip.Upsert(a.DB)
+
+      if err != nil {
+        // TODO check for unique violation or something else going on?
+        fmt.Println("Error inserting trip: ", err)
+      }
+
+      update.Insert(a.DB)
+    }
   }
 
   return nil
@@ -71,6 +136,8 @@ func (a *AdviceServisory) trainList(transit *transit_realtime.FeedMessage, now t
 
   for _, entity := range transit.Entity {
     update, err := a.trainPositionFromTripUpdate(entity)
+
+    // fmt.Println(update.Timestamp.Sub(cutoff))
 
     if err == nil {
       // Only include trains that have moved in the last 10 minutes, are reporting times in the present/past
