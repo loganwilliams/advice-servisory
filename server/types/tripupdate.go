@@ -217,7 +217,7 @@ func (s1 *Stop) UpdatesWithStop(db *sql.DB, s2 *Stop) ([]*TripUpdate, error) {
   return scanRowsShort(rows)
 }
 
-func (s *Stop) ReadUpdatesAtDate(db *sql.DB, time.Time *date) ([]*TripUpdate, error) {
+func (s *Stop) ReadUpdatesAtDate(db *sql.DB, date time.Time) ([]*TripUpdate, error) {
   var (
     updates []*TripUpdate = []*TripUpdate{}
     err     error
@@ -304,7 +304,7 @@ func (s *Stop) ReadUpdatesAtDate(db *sql.DB, time.Time *date) ([]*TripUpdate, er
   }
 
   startTime := date
-  endTime := date.Add(24*time.Hour)
+  endTime := date.Add(24 * time.Hour)
 
   rows, err := query.Query(queryVal, startTime, endTime)
 

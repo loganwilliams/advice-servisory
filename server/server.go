@@ -39,7 +39,7 @@ func main() {
 
   r.HandleFunc("/api/stops", app.AllStopsHandler)
   r.HandleFunc("/api/stop/{stop_id}", app.StopHandler)
-  r.HandleFunc("/api/stop/{stop_id}/{date}", app.StopHandleDater)
+  r.HandleFunc("/api/stop/{stop_id}/{date}", app.StopHandlerDate)
   r.HandleFunc("/api/station/{station_id}", app.StationHandler)
   r.HandleFunc("/api/station/{station_id}/{date}", app.StationHandlerDate)
 

@@ -127,7 +127,7 @@ func (a *AdviceServisory) StationHandlerDate(w http.ResponseWriter, r *http.Requ
   w = setHeaders(w)
   vars := mux.Vars(r)
   stop := &types.Stop{Station: vars["station_id"]}
-  date := time.Parse("2006-01-02", vars["date"])
+  date, err := time.Parse("2006-01-02", vars["date"])
   updates, err := stop.ReadUpdatesAtDate(a.DB, date)
 
   if err != nil {
@@ -186,7 +186,7 @@ func (a *AdviceServisory) StopHandlerDate(w http.ResponseWriter, r *http.Request
   w = setHeaders(w)
   vars := mux.Vars(r)
   stop := &types.Stop{Id: vars["stop_id"]}
-  date := time.Parse("2006-01-02", vars["date"])
+  date, err := time.Parse("2006-01-02", vars["date"])
 
   updates, err := stop.ReadUpdatesAtDate(a.DB, date)
 
